@@ -3,8 +3,12 @@ require 'test_helper'
 class EventsControllerTest < ActionController::TestCase
   include Devise::Test::ControllerHelpers
 
-  test 'should create event' do
+  setup do
+    @user = users(:one)
     sign_in users(:one)
+  end
+
+  test 'should create event' do
     post :create, { event: {name: 'Event 1'}.merge(date_to_array_hash(:start_date, Date.today)) }
     assert_response :success
 
@@ -12,9 +16,6 @@ class EventsControllerTest < ActionController::TestCase
   end
 
   test 'should create recurring event' do
-    user = users(:one)
-    sign_in user
-
     s = IceCube::Rule.weekly.day(:monday, :tuesday)
     start_date = Date.today
     post :create, { event: { schedule: s.to_json, name: 'Event 1'}.merge(date_to_array_hash(:start_date, start_date)) }
@@ -22,18 +23,16 @@ class EventsControllerTest < ActionController::TestCase
     assert_equal 1, Event.count
 
     range = CustomCalendar.date_range_params(start_date + 40.days)
-    event_index_service = EventIndexService.new(user, range)
+    event_index_service = EventIndexService.new(@user, range)
     assert_equal (range[:from_date]..range[:to_date]).map(&:wday).select {|wday| wday == 1 || wday == 2}.count,
                  event_index_service.events.count
   end
 
   test 'should update all future recurring events' do
-    user = users(:one)
-    sign_in user
     start_date = Date.today + 3.days
-    create_recurring_event(user, start_date)
+    create_recurring_event(@user, start_date)
     range = CustomCalendar.date_range_params(start_date + 20.days)
-    event_index_service = EventIndexService.new(user, range)
+    event_index_service = EventIndexService.new(@user, range)
     event = event_index_service.events[2]
 
     s = IceCube::Rule.weekly.day(:tuesday)
@@ -45,12 +44,10 @@ class EventsControllerTest < ActionController::TestCase
   end
 
   test 'should update single recurring event' do
-    user = users(:one)
-    sign_in user
     start_date = Date.today + 3.days
-    create_recurring_event(user, start_date)
+    create_recurring_event(@user, start_date)
     range = CustomCalendar.date_range_params(start_date + 20.days)
-    event_index_service = EventIndexService.new(user, range)
+    event_index_service = EventIndexService.new(@user, range)
     event = event_index_service.events[2]
 
     new_date = event.start_date + 2.days
@@ -63,10 +60,8 @@ class EventsControllerTest < ActionController::TestCase
   end
 
   test 'should update none reccurring event' do
-    user = users(:one)
-    sign_in user
     start_date = Date.today + 3.days
-    create_recurring_event(user, start_date)
+    create_recurring_event(@user, start_date)
 
     event = Event.first
     new_date = event.start_date + 2.days
