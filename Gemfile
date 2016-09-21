@@ -48,3 +48,6 @@ gem 'sass-rails', '>= 3.2'
 gem 'rails-i18n'
 gem 'recurring_select'
 gem 'wannabe_bool'
+gem 'rails_12factor', group: :production
+
+ruby "2.3.1"
