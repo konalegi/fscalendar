@@ -1,0 +1,14 @@
+<%= CustomCalendar.new(self,events: @events).render do |date, events| %>
+  <%= date %>
+
+  <% events.each do |event| %>
+    <div>
+      <%= link_to event.name + ' (Мое)', edit_event_path(event, event_date: event.start_date, virtual: event.virtual?) %>
+    </div>
+  <% end %>
+
+<% end %>
+
+<br>
+
+<%= link_to 'New Event', new_event_path %>

@@ -1,0 +1,19 @@
+default: &default
+  adapter: postgresql
+  username: dev
+  password:
+  pool: 10
+  timeout: 5000
+
+development:
+  <<: *default
+  database: 'fs_calendar_dev'
+
+test:
+  <<: *default
+  database: 'fs_calendar_test'
+
+production:
+  <<: *default
+  database: 'fs_calendar_prod'
+  password: dev
