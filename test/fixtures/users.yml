@@ -1,2 +1,4 @@
 one:
+  encrypted_password: <%= Devise::Encryptor.digest(User, '123123') %>
+  email: 'test@email.com'
   full_name: David Heinemeier Hansson
