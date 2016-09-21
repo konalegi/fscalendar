@@ -20,6 +20,7 @@ class EventCreateService
       if rule = schedule_rule
         event.recurrence_periods.create!(schedule: rule, start_date: start_date)
       end
+      true
     end
   end
 

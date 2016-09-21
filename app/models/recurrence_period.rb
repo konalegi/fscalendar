@@ -26,7 +26,7 @@ class RecurrencePeriod < ActiveRecord::Base
     end
 
     schedule.occurrences_between(from_date, to_date).map do |event_date|
-      Event.new(start_date: event_date, name: event.name, id: event.id, virtual: true)
+      Event.new(start_date: event_date, name: event.name, id: event.id, virtual: true, user_id: event.user_id)
     end
   end
 

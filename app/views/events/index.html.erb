@@ -3,7 +3,11 @@
 
   <% events.each do |event| %>
     <div>
-      <%= link_to event.name + ' (Мое)', edit_event_path(event, event_date: event.start_date, virtual: event.virtual?) %>
+      <% if able_to_edit_event?(event) %>
+        <%= link_to event.name + ' (Мое)', edit_event_path(event, event_date: event.start_date, virtual: event.virtual?) %>
+      <% else %>
+        <%= event.name + " (#{event.user.full_name})" %>
+      <% end %>
     </div>
   <% end %>
 

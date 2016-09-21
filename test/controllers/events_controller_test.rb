@@ -74,6 +74,48 @@ class EventsControllerTest < ActionController::TestCase
     assert_equal  new_name, event.name
   end
 
+  test 'users should see all events for recurrent events' do
+    start_date = Date.today + 3.days
+    create_recurring_event(@user, start_date)
+    second_user = users(:two)
+    sign_out @user
+    sign_in second_user
+    create_recurring_event(second_user, start_date)
+
+    range = CustomCalendar.date_range_params(start_date + 20.days)
+
+    event_index_service = EventIndexService.new(@user, {see_all: true}.merge(range))
+    assert_equal 2, event_index_service.events.map(&:user_id).uniq.count
+    assert event_index_service.events.select {|event| event.user_id == second_user.id}.any?
+
+    event_index_service = EventIndexService.new(@user, range)
+    assert_equal 1, event_index_service.events.map(&:user_id).uniq.count
+    assert event_index_service.events.select {|event| event.user_id == second_user.id}.empty?
+  end
+
+
+  test 'users should see all events for none recurrent events' do
+    start_date = Date.today + 3.days
+
+    post :create, { event: {name: 'Event 1'}.merge(date_to_array_hash(:start_date, Date.today)) }
+    assert_response :success
+
+    second_user = users(:two)
+    sign_out @user
+    sign_in second_user
+
+    post :create, { event: {name: 'Event 2'}.merge(date_to_array_hash(:start_date, Date.today)) }
+    assert_response :success
+
+    event_index_service = EventIndexService.new(@user, see_all: true)
+    assert_equal 2, event_index_service.events.map(&:user_id).uniq.count
+    assert event_index_service.events.select {|event| event.user_id == second_user.id}.any?
+
+    event_index_service = EventIndexService.new(@user, {})
+    assert_equal 1, event_index_service.events.map(&:user_id).uniq.count
+    assert event_index_service.events.select {|event| event.user_id == second_user.id}.empty?
+  end
+
 
   def date_to_array_hash(key, date)
     { :"#{key}(1i)" => date.year, :"#{key}(2i)" => date.month, :"#{key}(3i)" => date.day }
